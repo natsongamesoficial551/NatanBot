@@ -37,14 +37,6 @@ class PainelLogs(commands.Cog):
         await ctx.send(f"✅ Canal de logs configurado para {canal.mention}.")
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
-        print(f"[LOG] {member} entrou no servidor {member.guild.name}")
-
-    @commands.Cog.listener()
-    async def on_member_remove(self, member):
-        print(f"[LOG] {member} saiu do servidor {member.guild.name}")
-
-    @commands.Cog.listener()
     async def on_message_delete(self, message):
         if message.author.bot or not message.guild:
             return
