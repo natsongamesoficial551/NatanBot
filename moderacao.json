@@ -1,0 +1,12 @@
+{
+  "avisos": {},
+  "mutes": {},
+  "bans_temporarios": {},
+  "configuracoes": {
+    "canal_logs": null,
+    "cargo_mute": null,
+    "max_avisos": 3,
+    "auto_punir": true
+  },
+  "historico": []
+}
