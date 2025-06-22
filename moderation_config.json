@@ -1,0 +1,20 @@
+{
+  "blocked_words": [
+    "idiota", "burro", "otário", "imbecil", "estúpido", "desgraçado", "miserável", "porra",
+    "caralho", "cacete", "merda", "bosta", "arrombado", "corno", "fdp", "foda", "puta",
+    "piranha", "vagabunda", "lixo", "escroto", "nojento", "maldito", "pau no cu", "cu",
+    "cuzão", "buceta", "pentelho", "boiola", "baitola", "viadinho", "viado", "gayzão",
+    "mongoloide", "retardado", "merdinha", "otária", "chupa rola", "chupador", "rola",
+    "pau", "chupa", "puta que pariu", "caralhuda", "fodedor", "fodona", "foder",
+    "trepador", "esporrada", "corna", "bucetuda", "estrupador", "macumbeiro", "zé ruela",
+    "cabrão", "fela da puta", "macaco", "viado escroto", "tranqueira", "merdeiro",
+    "nojenta", "pilantra", "prostituta", "vaca", "cadela", "desonrado", "babaca",
+    "otária", "bundão", "bunduda", "esquerdopata", "direitopata", "safado", "safada",
+    "sem noção", "demente", "idiotice", "infeliz", "satanás", "capeta", "demoníaco",
+    "encosto", "drag queen", "traveco", "bicha", "enrustido", "paspalho", "capacho",
+    "imprestável", "inútil", "bostinha", "sem vergonha", "bicho do mato", "mal educado",
+    "cabeçudo", "chifrudo", "tapado", "anta", "mula", "palhaço", "mal amado", "maricas"
+  ],
+  "max_warnings": 3,
+  "warning_decay_hours": 24
+}

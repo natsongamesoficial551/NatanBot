@@ -4,6 +4,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
+# Agora salvando os arquivos dentro da pasta data/
 CONFIG_PATH = "data/moderation_config.json"
 WARNINGS_PATH = "data/warnings.json"
 
