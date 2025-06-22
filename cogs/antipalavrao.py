@@ -4,43 +4,47 @@ import json
 import os
 from datetime import datetime, timedelta
 
-# Agora salvando os arquivos dentro da pasta data/
-CONFIG_PATH = "data/moderation_config.json"
-WARNINGS_PATH = "data/warnings.json"
-
-# === Utilitários ===
-def carregar_config():
-    if not os.path.exists(CONFIG_PATH):
-        return {"blocked_words": [], "max_warnings": 3, "warning_decay_hours": 24}
-    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-def salvar_config(config):
-    os.makedirs("data", exist_ok=True)
-    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=4, ensure_ascii=False)
-
-def carregar_warnings():
-    if not os.path.exists(WARNINGS_PATH):
-        return {}
-    with open(WARNINGS_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-def salvar_warnings(warnings):
-    os.makedirs("data", exist_ok=True)
-    with open(WARNINGS_PATH, "w", encoding="utf-8") as f:
-        json.dump(warnings, f, indent=4, ensure_ascii=False)
-
 class AntiPalavrao(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.config = carregar_config()
-        self.user_warnings = carregar_warnings()
+        self.config_path = "antipalavrao_config.json"
+        self.warnings_path = "antipalavrao_warnings.json"
+
+        self.config = self.carregar_config()
+        self.user_warnings = self.carregar_warnings()
         self.limpar_warnings_antigos.start()
 
-    def salvar(self):
-        salvar_config(self.config)
-        salvar_warnings(self.user_warnings)
+    def carregar_config(self):
+        if not os.path.exists(self.config_path):
+            config_inicial = {
+                "blocked_words": [],
+                "max_warnings": 3,
+                "warning_decay_hours": 24
+            }
+            self.salvar_config(config_inicial)
+            return config_inicial
+        with open(self.config_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def salvar_config(self, config=None):
+        if config is None:
+            config = self.config
+        with open(self.config_path, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+
+    def carregar_warnings(self):
+        if not os.path.exists(self.warnings_path):
+            return {}
+        with open(self.warnings_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def salvar_warnings(self):
+        with open(self.warnings_path, "w", encoding="utf-8") as f:
+            json.dump(self.user_warnings, f, indent=2, ensure_ascii=False)
+
+    def salvar_tudo(self):
+        self.salvar_config()
+        self.salvar_warnings()
 
     def contem_palavrao(self, texto):
         texto = texto.lower()
@@ -54,13 +58,16 @@ class AntiPalavrao(commands.Cog):
 
         for guild_id in list(self.user_warnings.keys()):
             for user_id in list(self.user_warnings[guild_id].keys()):
-                timestamp = datetime.fromisoformat(self.user_warnings[guild_id][user_id]["timestamp"])
-                if agora - timestamp > expiracao:
-                    del self.user_warnings[guild_id][user_id]
-                    atualizados = True
+                try:
+                    timestamp = datetime.fromisoformat(self.user_warnings[guild_id][user_id]["timestamp"])
+                    if agora - timestamp > expiracao:
+                        del self.user_warnings[guild_id][user_id]
+                        atualizados = True
+                except Exception:
+                    continue
 
         if atualizados:
-            self.salvar()
+            self.salvar_warnings()
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -81,7 +88,7 @@ class AntiPalavrao(commands.Cog):
             warnings_data["count"] += 1
             warnings_data["timestamp"] = datetime.utcnow().isoformat()
             self.user_warnings[guild_id][user_id] = warnings_data
-            self.salvar()
+            self.salvar_warnings()
 
             embed = discord.Embed(
                 title="🚫 Linguagem Inadequada",
@@ -96,7 +103,7 @@ class AntiPalavrao(commands.Cog):
                 try:
                     await message.author.timeout(timeout_duration, reason="Excesso de palavrões")
                     await message.channel.send(f"🔇 {message.author.mention} foi silenciado por 10 minutos por excesso de avisos.")
-                except:
+                except Exception:
                     pass
 
     @commands.command(name="modconfig")
@@ -105,12 +112,12 @@ class AntiPalavrao(commands.Cog):
         guild_id = str(ctx.guild.id)
         if acao == "add" and parametro:
             self.config["blocked_words"].append(parametro.lower())
-            self.salvar()
+            self.salvar_config()
             await ctx.send(f"✅ Palavra `{parametro}` adicionada à lista de bloqueio.")
         elif acao == "remove" and parametro:
             if parametro.lower() in self.config["blocked_words"]:
                 self.config["blocked_words"].remove(parametro.lower())
-                self.salvar()
+                self.salvar_config()
                 await ctx.send(f"✅ Palavra `{parametro}` removida da lista de bloqueio.")
             else:
                 await ctx.send("❌ Palavra não encontrada na lista.")
@@ -130,10 +137,14 @@ class AntiPalavrao(commands.Cog):
                 await ctx.send("❌ Mencione um usuário.")
                 return
             self.user_warnings.get(str(ctx.guild.id), {}).pop(str(membro.id), None)
-            self.salvar()
+            self.salvar_warnings()
             await ctx.send(f"♻️ Avisos de {membro.mention} foram resetados.")
         else:
             await ctx.send("❌ Uso inválido. Exemplo: `!modconfig add palavrão` ou `!modconfig list`")
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print(f"✅ Sistema de Anti-Palavrões carregado! Arquivos: {self.config_path}, {self.warnings_path}")
 
 async def setup(bot):
     await bot.add_cog(AntiPalavrao(bot))
